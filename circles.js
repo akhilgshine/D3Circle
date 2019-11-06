@@ -1,5 +1,5 @@
-var width = 1300;
-var height = 1000;
+var width = 1800;
+var height = 600;
 
 
 
@@ -14,6 +14,35 @@ var svg = d3.select("svg")
 var div = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
+
+
+    var forceXSeperate = d3.forceX(function (d) {
+        let population = numeral(d['records']).value()
+        if (population < 9900000) {
+          return 200
+        }
+        else {
+          return 800
+        }
+
+
+      }).strength(0.05)
+
+      var forceXcombine = d3.forceX(function (d) {
+        return width / 2
+      }).strength(0.05)
+      var forceY = d3.forceY(function (d) {
+        return height / 2
+      }).strength(0.05)
+
+      // var forceCollide = d3.forceCollide(function (d) {
+      //   return radiusScale(numeral(d['records']).value()+(Math.random() * 20))
+      // })
+
+      var simulation = d3.forceSimulation()
+          .force("x", forceXcombine)
+          .force("y", forceY)
+          // .force("collide", forceCollide)
 
 
 var pack = d3.pack()
@@ -51,11 +80,10 @@ d3.csv("databreaches.csv", function(d) {
       .attr("r", function(d) { return d.r; })
       .style("fill", function(d) { return colorScale(d.data.Call_Type); })
       .on('mouseover', function(d, i) {
-      // transition the clicked element
-      // to have a radius of 20
+      // transition the mouse element
       d3.select(this)
         .transition()
-        .attr('r',function(d) { return d.r+1; })
+        .attr('r',function(d) { return d.r+10; })
 
     })
 //       .on("mouseover", function(d) {
@@ -78,7 +106,7 @@ d3.csv("databreaches.csv", function(d) {
     .on("mouseout", function(d) {
       d3.select(this)
         .transition()
-        .attr('r', 20);
+        .attr('r', d.r);
   });
 
 
@@ -100,37 +128,65 @@ d3.csv("databreaches.csv", function(d) {
            scale = Math.min(cbbox.width/bbox.width, cbbox.height/bbox.height);
        d.scale = scale;
      }
-  // var legend = svg.selectAll(".legend")
-  // .data(data).enter()
-  // .append("g")
-  // .attr("class","legend")
-  // .attr("transform", "translate(" + 780 + "," + 120+ ")");
-  //
-  //
-  //  legend.append("rect")
-  //    .attr("x", 0)
-  //    .attr("y", function(d, i) { return 20 * i; })
-  //    .attr("width", 15)
-  //    .attr("height", 15)
-	// 	.style("fill", function(d) { return colorScale(d.Call_Type)});
-  //
-  //
-  //   legend.append("text")
-  //    .attr("x", 25)
-  //   	.attr("text-anchor", "start")
-  //    .attr("dy", "1em")
-  //    .attr("y", function(d, i) { return 20 * i; })
-  //    .text(function(d) {return d.Call_Type;})
-  //   .attr("font-size", "12px");
-  //
-  //
-  //   legend.append("text")
-  //    .attr("x",31)
-  //    .attr("dy", "-.2em")
-  //    .attr("y",-10)
-  //    .text("Call Type")
-  // 	.attr("font-size", "17px");
+  var legend = svg.selectAll(".legend")
+  .data(data).enter()
+  .append("g")
+  .attr("class","legend")
+  .attr("transform", "translate(" + 1200 + "," + 120+ ")");
 
 
+   legend.append("rect")
+     .attr("x", 0)
+     .attr("y", function(d, i) { return 20 * i; })
+     .attr("width", 15)
+     .attr("height", 15)
+		.style("fill", function(d) { return colorScale(d.Call_Type)});
+
+
+    legend.append("text")
+     .attr("x", 25)
+    	.attr("text-anchor", "start")
+     .attr("dy", "1em")
+     .attr("y", function(d, i) { return 20 * i; })
+     .text(function(d) {return d.Call_Type;})
+    .attr("font-size", "12px");
+
+
+    legend.append("text")
+     .attr("x",31)
+     // .attr("dy", "-.2em")
+     .attr("y",-10)
+     .text("Breached Entity")
+  	.attr("font-size", "17px");
+
+  simulation.nodes(data)
+        .on('tick', ticked)
+
+        function ticked() {
+            //
+            // texts.attr("x", function (d) {
+            //   return d.x
+            // })
+            // .attr("y", function (d) {
+            //   return d.y
+            // });
+            node.attr("transform", (data)=>{return "translate("+ data.x +","+data.y+")"});
+            labels
+      .attr('x', d => d.x)
+      .attr('y', d => d.y)
+
+          }
 
 });
+
+
+
+d3.select("#seperate").on('click', function () {
+    d3.forceX(function (d) {
+
+
+      return width / 2
+    });
+
+
+  })
